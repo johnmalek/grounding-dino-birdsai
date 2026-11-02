@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birdsai-data-pipeline"
+version = "0.1.0"
+description = "BIRDSAI manifest, COCO conversion, visualization, and evaluation tools"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.0",
+  "Pillow>=10.0",
+  "tqdm>=4.66",
+  "matplotlib>=3.8",
+  "pycocotools>=2.0.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["birdsai_pipeline*"]

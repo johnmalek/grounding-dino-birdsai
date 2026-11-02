@@ -1,0 +1,13 @@
+dataset_root: /absolute/path/to/BIRDSAI
+output_root: /absolute/path/to/project/outputs
+random_seed: 42
+validation_sequences: 6
+categories:
+  0: animal
+  1: person
+size_thresholds:
+  small_max_area: 200
+  medium_max_area: 2000
+evaluation:
+  score_threshold: 0.25
+  iou_threshold: 0.50
