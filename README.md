@@ -128,6 +128,140 @@ The report includes COCO mAP/AP50/AP75, size-specific AP, per-class metrics,
 precision, recall, F1, false positives per frame, and subgroup recall for size,
 noise, and occlusion.
 
+## Experiment A: pretrained Grounding DINO, full-frame inference
+
+Experiment A uses the untouched pretrained Grounding DINO Swin-T checkpoint.
+The model processes each validation image at the repository's standard
+full-frame resize. Four prompt formulations are evaluated. GPU inference is
+performed once per prompt at a permissive box threshold of `0.05`; confidence
+thresholds are then swept offline without rerunning the model.
+
+### Set up the Grounding DINO environment
+
+Use a separate GPU environment from the lightweight data-preparation
+environment. Adjust the CUDA/PyTorch versions to match the HPC modules.
+
+Clone the official repository and download its Swin-T checkpoint if they are
+not already present:
+
+```bash
+cd "$HOME/computer_vision"
+git clone https://github.com/IDEA-Research/GroundingDINO.git
+
+mkdir -p "$HOME/computer_vision/checkpoints"
+wget \
+  -O "$HOME/computer_vision/checkpoints/groundingdino_swint_ogc.pth" \
+  https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+```
+
+```bash
+module load miniconda3
+module load cuda/12.1
+source "$(conda info --base)/etc/profile.d/conda.sh"
+
+conda create \
+  --prefix "$HOME/.conda/envs/grounding-dino" \
+  python=3.11 \
+  -y
+
+conda activate "$HOME/.conda/envs/grounding-dino"
+
+python -m pip install \
+  torch==2.3.1 \
+  torchvision==0.18.1 \
+  --index-url https://download.pytorch.org/whl/cu121
+
+python -m pip install \
+  "transformers==4.57.6" \
+  "huggingface-hub==0.36.0" \
+  ninja
+
+cd "$HOME/computer_vision/GroundingDINO"
+export CUDA_HOME=/usr/local/cuda
+python -m pip install --no-build-isolation -e .
+
+cd "$HOME/computer_vision/birdsai_data_pipeline"
+python -m pip install -e .
+```
+
+Test all paths and one image before launching the full array:
+
+```bash
+python -m birdsai_pipeline.grounding_dino_inference \
+  --dataset-root "$HOME/computer_vision/archive" \
+  --coco "$HOME/computer_vision/outputs/coco/validation.json" \
+  --config "$HOME/computer_vision/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py" \
+  --checkpoint "$HOME/computer_vision/checkpoints/groundingdino_swint_ogc.pth" \
+  --prompt-config configs/experiment_a_prompts.json \
+  --prompt-index 0 \
+  --output-dir "$HOME/computer_vision/outputs/experiment_a/debug" \
+  --limit 1
+```
+
+### Run the validation prompt study
+
+Verify the GPU partition, CUDA module, paths, and time limit in
+`slurm/experiment_a_validation.slurm`, then submit:
+
+```bash
+mkdir -p logs
+sbatch slurm/experiment_a_validation.slurm
+```
+
+This is a four-task Slurm array. Each task handles one prompt and writes a COCO
+result JSON under:
+
+```text
+outputs/experiment_a/predictions/
+```
+
+Interrupted tasks can be resubmitted because predictions and completed image
+IDs are checkpointed every 100 images.
+
+After all four array tasks report `COMPLETED`, submit the CPU evaluation:
+
+```bash
+sbatch slurm/experiment_a_evaluate.slurm
+```
+
+The selection results are written to:
+
+```text
+outputs/experiment_a/evaluation/
+├── prompt_threshold_summary.csv
+├── prompt_threshold_details.json
+└── selected_experiment_a_config.json
+```
+
+The prompt is selected by validation COCO mAP. Within that prompt, the score
+threshold is selected by validation F1 at IoU 0.50. `TestReal` remains unused
+during selection.
+
+### Finalize Experiment A on TestReal
+
+Only after `selected_experiment_a_config.json` exists and has been reviewed,
+run the selected configuration once on the untouched test set:
+
+```bash
+sbatch slurm/experiment_a_test.slurm
+```
+
+When that GPU job completes successfully, evaluate it:
+
+```bash
+sbatch slurm/experiment_a_test_evaluate.slurm
+```
+
+The final Experiment A report is:
+
+```text
+outputs/experiment_a/evaluation/test_metrics.json
+```
+
+Do not rerun prompt or threshold selection using this test report. Subsequent
+Experiments B, C, and D must use the same predefined test split and reporting
+metrics.
+
 ## Experimental discipline
 
 Use the validation split to select prompts, box thresholds, text thresholds,

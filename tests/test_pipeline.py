@@ -10,6 +10,10 @@ import pandas as pd
 from PIL import Image
 
 from birdsai_pipeline.evaluate import threshold_metrics
+from birdsai_pipeline.grounding_dino_inference import (
+    classify_phrase,
+    normalized_cxcywh_to_xywh,
+)
 
 
 def run_module(project_root: Path, module: str, *arguments: str) -> None:
@@ -130,7 +134,25 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert metrics["overall"]["recall"] == 1.0
 
 
+def test_grounding_dino_prediction_conversion() -> None:
+    prompt = {
+        "aliases": {
+            "person": ["person", "human"],
+            "animal": ["animal", "elephant", "lion"],
+        }
+    }
+    assert classify_phrase("person", prompt) == 2
+    assert classify_phrase("an elephant", prompt) == 1
+    assert classify_phrase("unknown object", prompt) is None
+
+    bbox = normalized_cxcywh_to_xywh([0.5, 0.5, 0.25, 0.5], 640, 480)
+    assert bbox == [240.0, 120.0, 160.0, 240.0]
+    clipped = normalized_cxcywh_to_xywh([0.0, 0.0, 0.2, 0.2], 100, 100)
+    assert clipped == [0.0, 0.0, 10.0, 10.0]
+
+
 if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as temporary_directory:
         test_end_to_end(Path(temporary_directory))
+    test_grounding_dino_prediction_conversion()
     print("Smoke test passed")
