@@ -50,12 +50,15 @@ def normalize_phrase(value: object) -> str:
 
 def map_phrase_to_category(phrase: object, aliases: dict[str, list[str]]) -> str | None:
     normalized = normalize_phrase(phrase)
+    matches = set()
+
     for category_name, values in aliases.items():
         for alias in sorted(values, key=len, reverse=True):
             normalized_alias = normalize_phrase(alias)
             if re.search(rf"\b{re.escape(normalized_alias)}\b", normalized):
-                return category_name
-    return None
+                matches.add(category_name)
+
+    return next(iter(matches)) if len(matches) == 1 else None
 
 
 def load_records(path: Path) -> dict[int, dict]:
