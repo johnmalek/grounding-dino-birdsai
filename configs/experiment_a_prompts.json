@@ -1,0 +1,39 @@
+{
+  "model_id": "IDEA-Research/grounding-dino-tiny",
+  "box_threshold": 0.1,
+  "text_threshold": 0.2,
+  "prompts": [
+    {
+      "name": "person_animal",
+      "text": "person . animal .",
+      "aliases": {
+        "person": ["person"],
+        "animal": ["animal"]
+      }
+    },
+    {
+      "name": "human_animal",
+      "text": "human . animal .",
+      "aliases": {
+        "person": ["human"],
+        "animal": ["animal"]
+      }
+    },
+    {
+      "name": "person_wildlife",
+      "text": "person . wildlife .",
+      "aliases": {
+        "person": ["person"],
+        "animal": ["wildlife"]
+      }
+    },
+    {
+      "name": "person_species",
+      "text": "person . elephant . lion . giraffe . dog .",
+      "aliases": {
+        "person": ["person"],
+        "animal": ["elephant", "lion", "giraffe", "dog"]
+      }
+    }
+  ]
+}
