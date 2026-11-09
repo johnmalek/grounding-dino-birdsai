@@ -1,0 +1,165 @@
+% Experiment A LaTeX section
+% Requires: \usepackage{graphicx}
+% The default figure root assumes this file is compiled from its
+% containing analysis directory. Override \ExperimentAFigureRoot
+% in the main report if the figures are copied elsewhere.
+\providecommand{\ExperimentAFigureRoot}{representative_examples}
+
+\section{Experiment A: Zero-Shot Grounding DINO on Thermal Imagery}
+\label{sec:experiment-a}
+
+\subsection{Research Question}
+
+This experiment evaluates how well pretrained zero-shot Grounding DINO transfers to BirdsAI thermal imagery without training or fine-tuning.
+
+\subsection{Experimental Setup}
+
+The experiment used \texttt{IDEA-Research/grounding-dino-tiny} through the Hugging Face Transformers implementation. Custom CUDA and CPU kernels were disabled. Predictions were mapped to the two BirdsAI categories, \emph{animal} and \emph{person}. Ambiguous phrases matching both categories were excluded.
+
+Four prompt formulations were compared on the validation split. The prompt was selected using COCO mAP@[0.50:0.95], and the operating score threshold was selected using F1 at IoU 0.50. The frozen configuration used the prompt \texttt{person . animal .}, a box threshold of 0.10, a text threshold of 0.20, and an operating score threshold of 0.10. TestReal was evaluated once after configuration selection.
+
+\subsection{Dataset Distribution}
+
+\begin{table}[htbp]
+\centering
+\caption{Validation and TestReal distribution comparison.}
+\label{tab:experiment-a-distribution}
+\small
+\begin{tabular}{lrrrrrrr}
+\hline
+Split & Seq. & Images & Ann. & Ann./image & Empty & Animal area & Person area \\
+\hline
+Validation & 6 & 6735 & 15086 & 2.24 & 54.2\% & 294.0 & 300.0 \\
+Test & 16 & 21333 & 78761 & 3.69 & 27.4\% & 2952.0 & 522.0 \\
+\hline
+\end{tabular}
+\end{table}
+
+TestReal contains substantially larger animals, more annotations per image, and fewer empty images than validation. In particular, median animal bounding-box area increases from 294 pixels squared in validation to 2952 pixels squared in TestReal. This distribution difference makes TestReal more favorable to zero-shot object detection and helps explain the higher test performance.
+
+\subsection{Validation Prompt Comparison}
+
+\begin{table}[htbp]
+\centering
+\caption{Corrected validation results after excluding ambiguous phrases.}
+\label{tab:experiment-a-prompts}
+\small
+\begin{tabular}{lrrrrrr}
+\hline
+Prompt & mAP & AP50 & AP75 & F1@0.25 & Animal AP50 & Person AP50 \\
+\hline
+\texttt{person\_animal} & 1.16\% & 3.36\% & 0.49\% & 12.29\% & 6.72\% & 0.00\% \\
+\texttt{human\_animal} & 0.38\% & 0.78\% & 0.32\% & 3.17\% & 1.56\% & 0.00\% \\
+\texttt{person\_wildlife} & 0.75\% & 2.26\% & 0.40\% & 12.72\% & 4.53\% & 0.00\% \\
+\texttt{person\_species} & 0.66\% & 1.17\% & 0.64\% & 2.38\% & 2.34\% & 0.00\% \\
+\hline
+\end{tabular}
+\end{table}
+
+The \texttt{person\_animal} prompt achieved the highest validation COCO mAP and was therefore selected before TestReal was examined.
+
+\subsection{Final Results}
+
+\begin{table}[htbp]
+\centering
+\caption{Final validation and TestReal results for the frozen configuration.}
+\label{tab:experiment-a-final}
+\small
+\begin{tabular}{lrrrrrrrr}
+\hline
+Split & mAP & AP50 & AP75 & Precision & Recall & F1 & FP/frame & Person AP50 \\
+\hline
+Validation & 1.16\% & 3.36\% & 0.49\% & 15.71\% & 12.85\% & 14.13\% & 1.54 & 0.00\% \\
+Test & 5.49\% & 18.24\% & 1.97\% & 33.40\% & 35.22\% & 34.29\% & 2.59 & 6.00\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{TestReal class-specific results at score threshold 0.10.}
+\label{tab:experiment-a-classes}
+\small
+\begin{tabular}{lrrrrrrr}
+\hline
+Category & TP & FP & FN & Precision & Recall & F1 & AP50 \\
+\hline
+Animal & 23917 & 34951 & 32991 & 40.63\% & 42.03\% & 41.32\% & 30.49\% \\
+Person & 3824 & 20357 & 18029 & 15.81\% & 17.50\% & 16.61\% & 6.00\% \\
+\hline
+\end{tabular}
+\end{table}
+
+On TestReal, the model achieved an overall mAP of 5.49\%, AP50 of 18.24\%, and F1 of 34.29\%. Animal detection transferred substantially better than person detection: animal AP50 was 30.49\%, whereas person AP50 was 6.00\%. The low AP75 of 1.97\% indicates that bounding-box localization remained poor. The model also produced 2.59 false positives per frame.
+
+\subsection{Qualitative Examples}
+
+Figures~\ref{fig:experiment-a-animal-examples} and \ref{fig:experiment-a-person-examples} show representative true positives, false positives, and false negatives. Green boxes indicate ground truth and red boxes indicate predictions.
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/tp/animal/tp_animal_01_image_7431.jpg}
+
+\small TP Animal
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/fp/animal/fp_animal_01_image_10758.jpg}
+
+\small FP Animal
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/fn/animal/fn_animal_01_image_6549.jpg}
+
+\small FN Animal
+\end{minipage}
+
+\caption{Representative animal detection outcomes on TestReal.}
+\label{fig:experiment-a-animal-examples}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/tp/person/tp_person_01_image_12565.jpg}
+
+\small TP Person
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/fp/person/fp_person_01_image_6434.jpg}
+
+\small FP Person
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\linewidth]{\ExperimentAFigureRoot/fn/person/fn_person_01_image_12941.jpg}
+
+\small FN Person
+\end{minipage}
+
+\caption{Representative person detection outcomes on TestReal.}
+\label{fig:experiment-a-person-examples}
+\end{figure}
+
+\subsection{Limitations}
+
+\begin{itemize}
+\item Only one pretrained Grounding DINO model size was evaluated.
+\item No thermal-domain fine-tuning or adaptation was performed.
+\item Validation contains only six sequences and differs substantially from TestReal in object size, density, and empty-frame frequency.
+\item Detection performance is strongly influenced by object size.
+\item The results do not include sequence-level confidence intervals.
+\end{itemize}
+
+\subsection{Conclusion}
+
+Zero-shot Grounding DINO demonstrates partial but limited transfer to BirdsAI thermal imagery. It detects animals substantially better than people, while precise localization remains weak. The model provides a useful zero-shot baseline and may assist pseudo-label generation, but it is not sufficiently reliable for deployment without thermal-domain adaptation or fine-tuning.
