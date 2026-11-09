@@ -1,0 +1,110 @@
+{
+  "validation": {
+    "images": 6735,
+    "sequences": 6,
+    "annotations": 15086,
+    "annotations_per_image": 2.239940608760208,
+    "empty_images": 3653,
+    "empty_image_percentage": 54.239049740163324,
+    "occluded_annotations": 32,
+    "noisy_annotations": 258,
+    "classes": {
+      "animal": {
+        "annotations": 11615,
+        "annotated_images": 1869,
+        "median_area": 294.0,
+        "median_width": 16.0,
+        "median_height": 17.0,
+        "sizes": {
+          "small": {
+            "count": 3877,
+            "percentage": 33.37925096857512
+          },
+          "medium": {
+            "count": 6591,
+            "percentage": 56.74558760223849
+          },
+          "large": {
+            "count": 1147,
+            "percentage": 9.875161429186397
+          }
+        }
+      },
+      "person": {
+        "annotations": 3471,
+        "annotated_images": 1213,
+        "median_area": 300.0,
+        "median_width": 13.0,
+        "median_height": 24.0,
+        "sizes": {
+          "small": {
+            "count": 183,
+            "percentage": 5.2722558340535866
+          },
+          "medium": {
+            "count": 3288,
+            "percentage": 94.72774416594642
+          },
+          "large": {
+            "count": 0,
+            "percentage": 0.0
+          }
+        }
+      }
+    }
+  },
+  "test": {
+    "images": 21333,
+    "sequences": 16,
+    "annotations": 78761,
+    "annotations_per_image": 3.6919795621806593,
+    "empty_images": 5839,
+    "empty_image_percentage": 27.37074016781512,
+    "occluded_annotations": 10032,
+    "noisy_annotations": 8584,
+    "classes": {
+      "animal": {
+        "annotations": 56908,
+        "annotated_images": 11803,
+        "median_area": 2952.0,
+        "median_width": 47.0,
+        "median_height": 63.0,
+        "sizes": {
+          "small": {
+            "count": 6177,
+            "percentage": 10.854361425458634
+          },
+          "medium": {
+            "count": 11807,
+            "percentage": 20.747522316721728
+          },
+          "large": {
+            "count": 38924,
+            "percentage": 68.39811625781964
+          }
+        }
+      },
+      "person": {
+        "annotations": 21853,
+        "annotated_images": 6406,
+        "median_area": 522.0,
+        "median_width": 18.0,
+        "median_height": 29.0,
+        "sizes": {
+          "small": {
+            "count": 3117,
+            "percentage": 14.263487850638356
+          },
+          "medium": {
+            "count": 18285,
+            "percentage": 83.67272228069372
+          },
+          "large": {
+            "count": 451,
+            "percentage": 2.0637898686679175
+          }
+        }
+      }
+    }
+  }
+}
