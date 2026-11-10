@@ -10,11 +10,11 @@ without fine-tuning.
 Completed work currently includes:
 
 - BIRDSAI manifest creation and annotation validation;
-- leakage-safe, sequence-level train/validation/test splits;
+- Leakage-safe, sequence-level train/validation/test splits;
 - MOT-to-COCO conversion for `animal` and `person`;
 - COCO and threshold-based detection evaluation;
 - Experiment A: zero-shot Grounding DINO transfer to thermal imagery;
-- qualitative TP/FP/FN examples and Markdown/LaTeX reports.
+- Qualitative TP/FP/FN examples and Markdown/LaTeX reports.
 
 ## Prepared dataset summary
 
