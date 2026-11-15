@@ -35,13 +35,14 @@
   },
   "training": {
     "epochs": 3,
-    "per_device_batch_size": 1,
-    "gradient_accumulation_steps": 8,
+    "per_device_batch_size": 4,
+    "gradient_accumulation_steps": 2,
     "effective_batch_size": 8,
     "warmup_steps": 500,
     "scheduler": "cosine",
-    "checkpoint_steps": 1000,
-    "validation_after_each_epoch": true
+    "checkpoint_steps": 250,
+    "validation_after_each_epoch": true,
+    "reference_configuration": "B1"
   },
   "configurations": {
     "B1": {
@@ -49,7 +50,11 @@
       "frozen": [
         "BERT text backbone",
         "complete Swin-T visual backbone"
-      ]
+      ],
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 2,
+      "effective_batch_size": 8,
+      "measured_peak_gpu_memory_gib": 30.03
     },
     "B2": {
       "description": "Partially adapt the Swin-T visual backbone.",

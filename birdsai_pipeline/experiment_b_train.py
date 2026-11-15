@@ -574,11 +574,43 @@ def main() -> None:
                 interrupted = STOP_REQUESTED and not reached_limit
                 break
 
+        epoch_complete = int(state["batch_in_epoch"]) >= len(loader)
+
+        if epoch_complete:
+            state["epoch"] = epoch + 1
+            state["batch_in_epoch"] = 0
+
+            save_checkpoint(
+                checkpoint_path,
+                model,
+                optimizer,
+                scheduler,
+                state,
+                args,
+            )
+
+            epoch_checkpoint_path = (
+                args.output_dir
+                / f"checkpoint_epoch_{epoch + 1}.pt"
+            )
+
+            save_checkpoint(
+                epoch_checkpoint_path,
+                model,
+                optimizer,
+                scheduler,
+                state,
+                args,
+            )
+
+            print(
+                f"Saved completed epoch checkpoint: "
+                f"{epoch_checkpoint_path}",
+                flush=True,
+            )
+
         if reached_limit or interrupted:
             break
-        state["epoch"] = epoch + 1
-        state["batch_in_epoch"] = 0
-        save_checkpoint(checkpoint_path, model, optimizer, scheduler, state, args)
 
     save_checkpoint(checkpoint_path, model, optimizer, scheduler, state, args)
     run_metadata["status"] = "interrupted" if interrupted else "complete"
