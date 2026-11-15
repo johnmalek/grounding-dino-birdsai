@@ -35,8 +35,8 @@
   },
   "training": {
     "epochs": 3,
-    "per_device_batch_size": 4,
-    "gradient_accumulation_steps": 2,
+    "per_device_batch_size": 2,
+    "gradient_accumulation_steps": 4,
     "effective_batch_size": 8,
     "warmup_steps": 500,
     "scheduler": "cosine",
@@ -51,10 +51,12 @@
         "BERT text backbone",
         "complete Swin-T visual backbone"
       ],
-      "per_device_batch_size": 4,
-      "gradient_accumulation_steps": 2,
+      "per_device_batch_size": 2,
+      "gradient_accumulation_steps": 4,
       "effective_batch_size": 8,
-      "measured_peak_gpu_memory_gib": 30.03
+      "batch_size_4_benchmark_peak_gpu_memory_gib": 30.03,
+      "batch_size_4_full_run_result": "Rejected after CUDA OOM on a worst-case full-data batch",
+      "allocator_configuration": "expandable_segments:True"
     },
     "B2": {
       "description": "Partially adapt the Swin-T visual backbone.",
