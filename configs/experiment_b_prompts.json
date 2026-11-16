@@ -1,0 +1,19 @@
+{
+  "model_id": "IDEA-Research/grounding-dino-tiny",
+  "box_threshold": 0.1,
+  "text_threshold": 0.2,
+  "prompts": [
+    {
+      "name": "animal_person",
+      "text": "animal . person .",
+      "aliases": {
+        "animal": [
+          "animal"
+        ],
+        "person": [
+          "person"
+        ]
+      }
+    }
+  ]
+}
