@@ -1,0 +1,37 @@
+{
+  "selection_split": "validation",
+  "final_configuration": {
+    "model_id": "IDEA-Research/grounding-dino-tiny",
+    "fine_tuning_configuration": "B2",
+    "checkpoint_epoch": 1,
+    "prompt": "animal . person .",
+    "box_threshold": 0.1,
+    "text_threshold": 0.2,
+    "operating_score_threshold": 0.1,
+    "tile_size": 384,
+    "tile_overlap": 0.2,
+    "classwise_nms_iou": 0.5
+  },
+  "validation": {
+    "mAP": 0.1283,
+    "AP50": 0.3640,
+    "AP75": 0.0525,
+    "precision": 0.6571,
+    "recall": 0.5783,
+    "F1": 0.6152,
+    "false_positives_per_frame": 0.6760,
+    "animal_AP50": 0.5400,
+    "person_AP50": 0.1881
+  },
+  "testreal": {
+    "mAP": 0.1144,
+    "AP50": 0.3096,
+    "AP75": 0.0666,
+    "precision": 0.3434,
+    "recall": 0.5668,
+    "F1": 0.4277,
+    "false_positives_per_frame": 4.0019,
+    "animal_AP50": 0.5681,
+    "person_AP50": 0.0511
+  }
+}
