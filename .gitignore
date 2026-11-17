@@ -32,3 +32,13 @@ logs/
 # System files
 .DS_Store
 Thumbs.db
+# Raw data and generated outputs
+checkpoints/
+# Large model and prediction artifacts
+records.jsonl
+predictions.json
+# Environments and caches
+.cache/
+# Editors and operating systems
+.vscode/
+.idea/
