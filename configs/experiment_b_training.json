@@ -1,0 +1,91 @@
+{
+  "experiment": "Experiment B",
+  "research_question": "How much does supervised fine-tuning improve Grounding DINO on thermal BIRDSAI imagery?",
+  "model_id": "IDEA-Research/grounding-dino-tiny",
+  "prompt": "animal. person.",
+  "classes": [
+    "animal",
+    "person"
+  ],
+  "category_mapping": {
+    "1": 0,
+    "2": 1
+  },
+  "disable_custom_kernels": true,
+  "seed": 42,
+  "data": {
+    "train_json": "~/computer_vision/outputs/coco/train.json",
+    "validation_json": "~/computer_vision/outputs/coco/validation.json",
+    "test_json": "~/computer_vision/outputs/coco/test.json",
+    "dataset_root": "~/computer_vision/archive",
+    "include_empty_frames": true
+  },
+  "image_processing": {
+    "smoke_shortest_edge": 384,
+    "smoke_longest_edge": 640,
+    "training_shortest_edge": 800,
+    "training_longest_edge": 1333
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "detector_learning_rate": 0.0001,
+    "visual_backbone_learning_rate": 1e-05,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 0.1
+  },
+  "training": {
+    "epochs": 3,
+    "per_device_batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 8,
+    "warmup_steps": 500,
+    "scheduler": "cosine",
+    "checkpoint_steps": 250,
+    "validation_after_each_epoch": true,
+    "reference_configuration": "B1"
+  },
+  "configurations": {
+    "B1": {
+      "description": "Train fusion, transformer, projections, and detection heads.",
+      "frozen": [
+        "BERT text backbone",
+        "complete Swin-T visual backbone"
+      ],
+      "per_device_batch_size": 2,
+      "gradient_accumulation_steps": 4,
+      "effective_batch_size": 8,
+      "batch_size_4_benchmark_peak_gpu_memory_gib": 30.03,
+      "batch_size_4_full_run_result": "Rejected after CUDA OOM on a worst-case full-data batch",
+      "allocator_configuration": "expandable_segments:True"
+    },
+    "B2": {
+      "description": "Partially adapt the Swin-T visual backbone.",
+      "frozen": [
+        "BERT text backbone",
+        "Swin-T patch embedding",
+        "Swin-T stages 1 and 2"
+      ],
+      "trainable_visual_stages": [
+        3,
+        4
+      ]
+    },
+    "B3": {
+      "description": "Adapt the complete visual backbone while preserving language representations.",
+      "frozen": [
+        "BERT text backbone"
+      ],
+      "trainable_visual_stages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  },
+  "model_selection": {
+    "checkpoint_metric": "validation COCO mAP@[0.50:0.95]",
+    "operating_threshold_metric": "validation F1 at IoU 0.50",
+    "test_split_usage": "Evaluate once after selecting the final configuration on validation."
+  }
+}

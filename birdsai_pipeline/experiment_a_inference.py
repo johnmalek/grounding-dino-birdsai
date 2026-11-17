@@ -169,7 +169,25 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--box-threshold", type=float)
     parser.add_argument("--text-threshold", type=float)
+    parser.add_argument(
+        "--shortest-edge",
+        type=int,
+        help="Override the processor's shortest image edge.",
+    )
+    parser.add_argument(
+        "--longest-edge",
+        type=int,
+        help="Override the processor's longest image edge.",
+    )
     parser.add_argument("--max-images", type=int)
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        help=(
+            "Optional Experiment B partial checkpoint containing "
+            "a model_state dictionary."
+        ),
+    )
     parser.add_argument("--resume", action="store_true")
     parser.add_argument(
         "--save-visualizations",
@@ -249,12 +267,98 @@ def main() -> int:
     print(f"Completed records found: {len(completed_ids)}")
 
     processor = AutoProcessor.from_pretrained(model_id)
+
+    if (args.shortest_edge is None) != (args.longest_edge is None):
+        raise ValueError(
+            "--shortest-edge and --longest-edge must be provided together"
+        )
+
+    processor_kwargs: dict[str, object] = {}
+    if args.shortest_edge is not None:
+        if args.shortest_edge <= 0 or args.longest_edge <= 0:
+            raise ValueError("Image edge sizes must be positive")
+
+        processor_kwargs["images_kwargs"] = {
+            "size": {
+                "shortest_edge": args.shortest_edge,
+                "longest_edge": args.longest_edge,
+            }
+        }
+
+    effective_shortest_edge = (
+        args.shortest_edge
+        if args.shortest_edge is not None
+        else int(processor.image_processor.size.shortest_edge)
+    )
+    effective_longest_edge = (
+        args.longest_edge
+        if args.longest_edge is not None
+        else int(processor.image_processor.size.longest_edge)
+    )
+
+    print(
+        "Image size: "
+        f"shortest_edge={effective_shortest_edge}, "
+        f"longest_edge={effective_longest_edge}"
+    )
+
     model_config = AutoConfig.from_pretrained(model_id)
     model_config.disable_custom_kernels = True
     model = AutoModelForZeroShotObjectDetection.from_pretrained(
         model_id,
         config=model_config,
-    ).to(device)
+    )
+
+    checkpoint_info = None
+    if args.checkpoint is not None:
+        checkpoint_path = args.checkpoint.expanduser().resolve()
+        if not checkpoint_path.is_file():
+            raise FileNotFoundError(
+                f"Checkpoint does not exist: {checkpoint_path}"
+            )
+
+        checkpoint = torch.load(
+            checkpoint_path,
+            map_location="cpu",
+            weights_only=False,
+        )
+
+        checkpoint_model_id = checkpoint.get("model_id")
+        if checkpoint_model_id not in (None, model_id):
+            raise ValueError(
+                "Checkpoint model ID does not match inference model: "
+                f"{checkpoint_model_id!r} != {model_id!r}"
+            )
+
+        model_state = checkpoint.get("model_state")
+        if not isinstance(model_state, dict):
+            raise ValueError(
+                "Checkpoint does not contain a model_state dictionary"
+            )
+
+        incompatible = model.load_state_dict(
+            model_state,
+            strict=False,
+        )
+        if incompatible.unexpected_keys:
+            raise ValueError(
+                "Unexpected checkpoint keys: "
+                f"{incompatible.unexpected_keys}"
+            )
+
+        checkpoint_info = {
+            "path": str(checkpoint_path),
+            "configuration": checkpoint.get("configuration"),
+            "training_state": checkpoint.get("training_state"),
+        }
+
+        print(
+            "Loaded fine-tuned checkpoint: "
+            f"{checkpoint_path}",
+            flush=True,
+        )
+
+    model.to(device)
     model.eval()
 
     postprocess_parameters = inspect.signature(
@@ -287,6 +391,7 @@ def main() -> int:
                 images=image,
                 text=prompt["text"],
                 return_tensors="pt",
+                **processor_kwargs,
             )
             inputs = {
                 name: value.to(device)
@@ -386,11 +491,16 @@ def main() -> int:
     metadata = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "model_id": model_id,
+        "checkpoint": checkpoint_info,
         "prompt_name": prompt["name"],
         "prompt_text": prompt["text"],
         "aliases": prompt["aliases"],
         "box_threshold": box_threshold,
         "text_threshold": text_threshold,
+        "image_size": {
+            "shortest_edge": effective_shortest_edge,
+            "longest_edge": effective_longest_edge,
+        },
         "disable_custom_kernels": True,
         "device": str(device),
         "gpu_name": (
