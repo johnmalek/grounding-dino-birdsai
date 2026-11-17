@@ -1,0 +1,50 @@
+{
+  "experiment": "Experiment B",
+  "research_question": "How much does thermal-domain fine-tuning and scale adaptation improve Grounding DINO on BIRDSAI?",
+  "selection_split": "validation",
+  "model_id": "IDEA-Research/grounding-dino-tiny",
+  "fine_tuning_configuration": "B2",
+  "checkpoint_epoch": 1,
+  "checkpoint": "outputs/experiment_b/full/B2/checkpoint_epoch_1.pt",
+  "prompt_name": "animal_person",
+  "prompt_text": "animal . person .",
+  "box_threshold": 0.1,
+  "text_threshold": 0.2,
+  "operating_score_threshold": 0.1,
+  "evaluation_iou_threshold": 0.5,
+  "image_preprocessing": {
+    "shortest_edge": 800,
+    "longest_edge": 1333
+  },
+  "tiling": {
+    "enabled": true,
+    "tile_size": 384,
+    "overlap": 0.2,
+    "classwise_nms_iou": 0.5
+  },
+  "disable_custom_kernels": true,
+  "checkpoint_selection_metric": "validation COCO mAP@[0.50:0.95]",
+  "scale_selection_metric": "validation COCO mAP@[0.50:0.95]",
+  "threshold_selection_metric": "validation overall F1 at IoU 0.50",
+  "validation_metrics": {
+    "mAP_50_95": 0.12826363603151714,
+    "AP_50": 0.36404958541887744,
+    "AP_75": 0.05247251240386889,
+    "precision": 0.6570761467198916,
+    "recall": 0.5782845021874585,
+    "f1": 0.6151676479921023,
+    "false_positives_per_frame": 0.6760207869339272,
+    "animal_AP_50": 0.5399964171624617,
+    "person_AP_50": 0.18810275367529308,
+    "animal_f1": 0.6652317042289188,
+    "person_f1": 0.36110516170486184,
+    "small_object_recall": 0.6278325123152709,
+    "large_object_recall": 0.8535309503051438
+  },
+  "notes": [
+    "B2 epoch 1 was selected by validation mAP.",
+    "Tiled inference outperformed native and global high-resolution inference.",
+    "Thresholds 0.10 through 0.19 produced identical validation metrics.",
+    "TestReal must be evaluated only with this frozen configuration."
+  ]
+}
