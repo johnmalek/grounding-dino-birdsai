@@ -169,6 +169,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--box-threshold", type=float)
     parser.add_argument("--text-threshold", type=float)
+    parser.add_argument(
+        "--shortest-edge",
+        type=int,
+        help="Override the processor's shortest image edge.",
+    )
+    parser.add_argument(
+        "--longest-edge",
+        type=int,
+        help="Override the processor's longest image edge.",
+    )
     parser.add_argument("--max-images", type=int)
     parser.add_argument(
         "--checkpoint",
@@ -257,6 +267,41 @@ def main() -> int:
     print(f"Completed records found: {len(completed_ids)}")
 
     processor = AutoProcessor.from_pretrained(model_id)
+
+    if (args.shortest_edge is None) != (args.longest_edge is None):
+        raise ValueError(
+            "--shortest-edge and --longest-edge must be provided together"
+        )
+
+    processor_kwargs: dict[str, object] = {}
+    if args.shortest_edge is not None:
+        if args.shortest_edge <= 0 or args.longest_edge <= 0:
+            raise ValueError("Image edge sizes must be positive")
+
+        processor_kwargs["images_kwargs"] = {
+            "size": {
+                "shortest_edge": args.shortest_edge,
+                "longest_edge": args.longest_edge,
+            }
+        }
+
+    effective_shortest_edge = (
+        args.shortest_edge
+        if args.shortest_edge is not None
+        else int(processor.image_processor.size.shortest_edge)
+    )
+    effective_longest_edge = (
+        args.longest_edge
+        if args.longest_edge is not None
+        else int(processor.image_processor.size.longest_edge)
+    )
+
+    print(
+        "Image size: "
+        f"shortest_edge={effective_shortest_edge}, "
+        f"longest_edge={effective_longest_edge}"
+    )
+
     model_config = AutoConfig.from_pretrained(model_id)
     model_config.disable_custom_kernels = True
     model = AutoModelForZeroShotObjectDetection.from_pretrained(
@@ -346,6 +391,7 @@ def main() -> int:
                 images=image,
                 text=prompt["text"],
                 return_tensors="pt",
+                **processor_kwargs,
             )
             inputs = {
                 name: value.to(device)
@@ -451,6 +497,10 @@ def main() -> int:
         "aliases": prompt["aliases"],
         "box_threshold": box_threshold,
         "text_threshold": text_threshold,
+        "image_size": {
+            "shortest_edge": effective_shortest_edge,
+            "longest_edge": effective_longest_edge,
+        },
         "disable_custom_kernels": True,
         "device": str(device),
         "gpu_name": (
