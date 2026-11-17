@@ -4,7 +4,12 @@ This repository provides a reproducible pipeline for preparing the BIRDSAI therm
 
 The final system uses the B2 fine-tuning configuration at epoch 1 together with 384-pixel tiled inference, 20% tile overlap, and class-wise non-maximum suppression at IoU 0.50. On the official `TestReal` split, it improves COCO mAP from **5.49% to 11.44%** relative to the zero-shot baseline.
 
-## Project status
+- BIRDSAI manifest creation and annotation validation;
+- Leakage-safe, sequence-level train/validation/test splits;
+- MOT-to-COCO conversion for `animal` and `person`;
+- COCO and threshold-based detection evaluation;
+- Experiment A: zero-shot Grounding DINO transfer to thermal imagery;
+- Qualitative TP/FP/FN examples and Markdown/LaTeX reports.
 
 - [x] Validate and prepare BIRDSAI annotations
 - [x] Create leakage-safe sequence-level train and validation splits
