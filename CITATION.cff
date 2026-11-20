@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite this repository, BIRDSAI, and Grounding DINO."
+title: "Grounding DINO for BIRDSAI Thermal Imagery"
+type: software
+authors:
+  - family-names: Garang
+    given-names: John Malek
+repository-code: "https://github.com/johnmalek/grounding-dino-birdsai"
+license: Apache-2.0
+version: 0.2.0
+date-released: 2026-11-20
+keywords:
+  - thermal imagery
+  - object detection
+  - Grounding DINO
+  - BIRDSAI
+  - aerial wildlife monitoring

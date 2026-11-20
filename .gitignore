@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.coverage
+.ruff_cache/
 *.egg-info/
 build/
 dist/
@@ -32,13 +34,16 @@ logs/
 # System files
 .DS_Store
 Thumbs.db
-# Raw data and generated outputs
+
+# Raw data, caches, and large experiment artifacts
 checkpoints/
-# Large model and prediction artifacts
 records.jsonl
 predictions.json
-# Environments and caches
+training_log.jsonl
+metadata.json.tmp
+*.tmp
 .cache/
+
 # Editors and operating systems
 .vscode/
 .idea/
