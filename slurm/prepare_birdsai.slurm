@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #SBATCH --job-name=birdsai-prepare
 #SBATCH --partition=stud
@@ -10,25 +10,12 @@
 
 set -euo pipefail
 
-# Load Conda on the compute node.
-module purge
-module load miniconda3
-source "$(conda info --base)/etc/profile.d/conda.sh"
-
-# Activate the Python 3.11 environment.
-conda activate "$HOME/.conda/envs/birdsai-data"
-
-# Project paths.
-PROJECT_DIR="$HOME/computer_vision/birdsai_data_pipeline"
-DATASET_ROOT="$HOME/computer_vision/archive"
-OUTPUT_ROOT="$HOME/computer_vision/outputs"
-
-cd "$PROJECT_DIR"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
 
 echo "Node: $(hostname)"
-echo "Python: $(which python)"
 python --version
 
 bash scripts/run_data_pipeline.sh \
-    "$DATASET_ROOT" \
-    "$OUTPUT_ROOT"
+    "$BIRDSAI_DATASET_ROOT" \
+    "$BIRDSAI_OUTPUT_ROOT"

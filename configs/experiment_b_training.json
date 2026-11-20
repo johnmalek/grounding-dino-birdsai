@@ -14,10 +14,10 @@
   "disable_custom_kernels": true,
   "seed": 42,
   "data": {
-    "train_json": "~/computer_vision/outputs/coco/train.json",
-    "validation_json": "~/computer_vision/outputs/coco/validation.json",
-    "test_json": "~/computer_vision/outputs/coco/test.json",
-    "dataset_root": "~/computer_vision/archive",
+    "train_json": "outputs/coco/train.json",
+    "validation_json": "outputs/coco/validation.json",
+    "test_json": "outputs/coco/test.json",
+    "dataset_root": "data/birdsai",
     "include_empty_frames": true
   },
   "image_processing": {

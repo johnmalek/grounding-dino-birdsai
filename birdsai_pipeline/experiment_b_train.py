@@ -409,6 +409,12 @@ def main() -> None:
     )
     configure_trainable_parameters(model, args.configuration)
     if args.gradient_checkpointing:
+        if not getattr(model, "supports_gradient_checkpointing", False):
+            raise ValueError(
+                f"{model.__class__.__name__} does not support gradient "
+                "checkpointing in the installed Transformers version. "
+                "Remove --gradient-checkpointing."
+            )
         model.gradient_checkpointing_enable()
 
     report = parameter_report(model)

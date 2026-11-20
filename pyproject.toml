@@ -4,8 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "birdsai-data-pipeline"
-version = "0.1.0"
-description = "BIRDSAI manifest, COCO conversion, visualization, and evaluation tools"
+version = "0.2.0"
+description = "Reproducible Grounding DINO experiments on BIRDSAI thermal imagery"
+readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = [
   "pandas>=2.0",
@@ -16,5 +18,31 @@ dependencies = [
   "scipy>=1.10",
 ]
 
+[project.optional-dependencies]
+ml = [
+  "safetensors>=0.4",
+  "torch>=2.2",
+  "torchvision>=0.17",
+  "transformers>=4.40",
+]
+dev = [
+  "pytest>=8.0",
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+birdsai-build-manifest = "birdsai_pipeline.build_manifest:main"
+birdsai-create-splits = "birdsai_pipeline.create_splits:main"
+birdsai-mot-to-coco = "birdsai_pipeline.mot_to_coco:main"
+birdsai-visualize = "birdsai_pipeline.visualize:main"
+birdsai-evaluate = "birdsai_pipeline.evaluate:main"
+birdsai-infer = "birdsai_pipeline.experiment_a_inference:main"
+birdsai-train = "birdsai_pipeline.experiment_b_train:main"
+birdsai-tiled-infer = "birdsai_pipeline.experiment_b_tiled_inference:main"
+
 [tool.setuptools.packages.find]
 include = ["birdsai_pipeline*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

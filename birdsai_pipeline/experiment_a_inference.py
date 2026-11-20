@@ -4,7 +4,6 @@ import argparse
 import inspect
 import json
 import os
-import re
 import signal
 import sys
 from datetime import datetime, timezone
@@ -13,6 +12,8 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 from tqdm import tqdm
+
+from .detection_utils import map_phrase_to_category, xyxy_to_xywh
 
 
 STOP_REQUESTED = False
@@ -44,23 +45,6 @@ def load_prompt(config_path: Path, prompt_name: str) -> tuple[dict, dict]:
     return config, matches[0]
 
 
-def normalize_phrase(value: object) -> str:
-    return " ".join(re.findall(r"[a-z0-9]+", str(value).lower()))
-
-
-def map_phrase_to_category(phrase: object, aliases: dict[str, list[str]]) -> str | None:
-    normalized = normalize_phrase(phrase)
-    matches = set()
-
-    for category_name, values in aliases.items():
-        for alias in sorted(values, key=len, reverse=True):
-            normalized_alias = normalize_phrase(alias)
-            if re.search(rf"\b{re.escape(normalized_alias)}\b", normalized):
-                matches.add(category_name)
-
-    return next(iter(matches)) if len(matches) == 1 else None
-
-
 def load_records(path: Path) -> dict[int, dict]:
     if not path.exists():
         return {}
@@ -85,21 +69,6 @@ def resolve_image(dataset_root: Path, file_name: str) -> Path:
     if not path.is_file():
         raise FileNotFoundError(f"Missing image: {path}")
     return path
-
-
-def xyxy_to_xywh(
-    box: list[float],
-    width: int,
-    height: int,
-) -> tuple[list[float], list[float]] | None:
-    x1, y1, x2, y2 = map(float, box)
-    x1 = min(max(x1, 0.0), float(width))
-    y1 = min(max(y1, 0.0), float(height))
-    x2 = min(max(x2, 0.0), float(width))
-    y2 = min(max(y2, 0.0), float(height))
-    if x2 <= x1 or y2 <= y1:
-        return None
-    return [x1, y1, x2 - x1, y2 - y1], [x1, y1, x2, y2]
 
 
 def consolidate_predictions(records: dict[int, dict]) -> list[dict]:

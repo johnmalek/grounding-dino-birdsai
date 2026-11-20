@@ -9,6 +9,11 @@ from pathlib import Path
 import pandas as pd
 from PIL import Image
 
+from birdsai_pipeline.detection_utils import (
+    axis_origins,
+    map_phrase_to_category,
+    tile_windows,
+)
 from birdsai_pipeline.evaluate import threshold_metrics
 
 
@@ -130,7 +135,40 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert metrics["overall"]["recall"] == 1.0
 
 
+def test_phrase_mapping_rejects_ambiguous_phrases() -> None:
+    aliases = {"animal": ["animal"], "person": ["person"]}
+    assert map_phrase_to_category("animal", aliases) == "animal"
+    assert map_phrase_to_category("person", aliases) == "person"
+    assert map_phrase_to_category("person animal", aliases) is None
+    assert map_phrase_to_category("background", aliases) is None
+
+
+def test_tile_windows_cover_image_edges() -> None:
+    assert axis_origins(640, 384, 0.20) == [0, 256]
+    assert axis_origins(512, 384, 0.20) == [0, 128]
+    windows = tile_windows(640, 512, 384, 0.20)
+    assert len(windows) == 4
+    assert (0, 0, 384, 384) in windows
+    assert (256, 128, 640, 512) in windows
+
+
+def test_versioned_configuration_paths_are_portable() -> None:
+    project_root = Path(__file__).parents[1]
+    config = json.loads(
+        (project_root / "configs" / "experiment_b_training.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    for value in config["data"].values():
+        if isinstance(value, str):
+            assert not value.startswith("~")
+            assert not Path(value).is_absolute()
+
+
 if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as temporary_directory:
         test_end_to_end(Path(temporary_directory))
+    test_phrase_mapping_rejects_ambiguous_phrases()
+    test_tile_windows_cover_image_edges()
+    test_versioned_configuration_paths_are_portable()
     print("Smoke test passed")

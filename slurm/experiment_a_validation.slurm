@@ -12,15 +12,11 @@
 
 set -euo pipefail
 
-module purge
-module load miniconda3
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate birdsai-data
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
 
-REPOSITORY="$HOME/computer_vision/birdsai_data_pipeline"
-DATASET_ROOT="$HOME/computer_vision/archive"
-COCO_JSON="$HOME/computer_vision/outputs/coco/validation.json"
-OUTPUT_ROOT="$HOME/computer_vision/outputs/experiment_a_restart/validation"
+COCO_JSON="$BIRDSAI_OUTPUT_ROOT/coco/validation.json"
+EXPERIMENT_OUTPUT="$BIRDSAI_OUTPUT_ROOT/experiment_a/validation"
 
 PROMPTS=(
   person_animal
@@ -30,11 +26,7 @@ PROMPTS=(
 )
 PROMPT_NAME="${PROMPTS[$SLURM_ARRAY_TASK_ID]}"
 
-export HF_HOME="$HOME/computer_vision/checkpoints/huggingface"
-export PYTHONPATH="$REPOSITORY"
-
-cd "$REPOSITORY"
-mkdir -p "$OUTPUT_ROOT/$PROMPT_NAME"
+mkdir -p "$EXPERIMENT_OUTPUT/$PROMPT_NAME"
 
 echo "Started: $(date --iso-8601=seconds)"
 echo "Host: $(hostname)"
@@ -61,8 +53,8 @@ PY
 python -m birdsai_pipeline.experiment_a_inference \
   --config configs/experiment_a_prompts.json \
   --coco-json "$COCO_JSON" \
-  --dataset-root "$DATASET_ROOT" \
-  --output-dir "$OUTPUT_ROOT/$PROMPT_NAME" \
+  --dataset-root "$BIRDSAI_DATASET_ROOT" \
+  --output-dir "$EXPERIMENT_OUTPUT/$PROMPT_NAME" \
   --prompt-name "$PROMPT_NAME" \
   --device cuda \
   --resume \

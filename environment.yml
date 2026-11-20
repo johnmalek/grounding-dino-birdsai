@@ -1,0 +1,12 @@
+name: birdsai-data
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - "-e .[ml,dev]"
+
+# Install the PyTorch build recommended for your CUDA driver before using this
+# file on a GPU cluster. The exact tested versions are recorded in
+# docs/REPRODUCIBILITY.md.
