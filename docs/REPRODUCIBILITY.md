@@ -77,7 +77,20 @@ ablation by continuing it to three total epochs:
 
 The selected settings are versioned in configs/experiment_b_selected.json.
 
-## Stage 4: frozen final evaluation
+## Stage 4: scale selection
+
+Run the B2 epoch-1 scale comparison on validation:
+
+    sbatch slurm/experiment_b_scale_validation.slurm
+
+The array compares native 800/1333 inference, global 1024/1706 inference, and
+384-pixel tiled inference with 20% overlap and class-wise NMS at IoU 0.50. Each
+task writes predictions and metrics.json under
+outputs/experiment_b/scale_validation/.
+
+Select the scale strategy using validation mAP before running TestReal.
+
+## Stage 5: frozen final evaluation
 
 Run this only after all model, checkpoint, scale, overlap, NMS, and threshold
 choices are frozen using validation:
@@ -96,6 +109,15 @@ Run the inexpensive repository checks on any machine:
 For each expensive run, retain the exact Git commit, JSON configuration, Slurm
 logs, metadata, training log, checkpoint checksum, and prediction checksum.
 Record external URLs and hashes in ARTIFACTS.md.
+
+
+After all stages finish, collect the metrics with:
+
+    python scripts/summarize_results.py \
+      --output-root "$BIRDSAI_OUTPUT_ROOT"
+
+This command fails if an expected result is missing, preventing an incomplete
+run from being mistaken for a complete reproduction.
 
 ## Known compatibility constraints
 

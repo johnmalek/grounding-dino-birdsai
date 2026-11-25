@@ -65,4 +65,11 @@ python -m birdsai_pipeline.experiment_a_inference \
   --save-visualizations 50 \
   --hide-scores
 
+python -m birdsai_pipeline.evaluate \
+  --ground-truth "$COCO_JSON" \
+  --predictions "$OUTPUT_DIR/predictions.json" \
+  --score-threshold 0.10 \
+  --iou-threshold 0.50 \
+  --output "$OUTPUT_DIR/metrics.json"
+
 echo "Finished: $(date --iso-8601=seconds)"

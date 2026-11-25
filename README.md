@@ -31,7 +31,7 @@ to the zero-shot baseline.
 ├── birdsai_pipeline/       Python package: preparation, training, inference, evaluation
 ├── configs/                Prompts, training protocol, and frozen selections
 ├── docs/                   Reproduction guide and complete result tables
-├── notebooks/              Exploratory analysis only
+├── notebooks/              Ordered reproduction runbooks and data exploration
 ├── reports/                Versioned compact metrics, figures, and qualitative examples
 ├── scripts/                Local pipeline and repository validation scripts
 ├── slurm/                  Portable HPC job definitions
@@ -160,12 +160,28 @@ sbatch slurm/experiment_a_test.slurm
 sbatch slurm/experiment_b_train.slurm
 sbatch slurm/experiment_b_validation.slurm
 sbatch slurm/experiment_b_continue_b2.slurm   # checkpoint-selection ablation
+sbatch slurm/experiment_b_scale_validation.slurm
 sbatch slurm/experiment_b_test.slurm          # frozen final evaluation
 ```
 
 Wait for each dependent stage to complete before submitting the next, or add
 site-specific Slurm dependencies. Detailed commands and expected artifacts are
 documented in [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+
+
+The same workflow is available as ordered notebooks:
+
+| Notebook | Purpose |
+|---|---|
+| `01_birdsai_data_exploration.ipynb` | Inspect manifests, split balance, and annotation checks |
+| `02_prepare_data.ipynb` | Run or verify data preparation |
+| `03_experiment_a_zero_shot.ipynb` | Submit and inspect the zero-shot baseline |
+| `04_experiment_b_finetuning.ipynb` | Train, validate, and continue B1/B2/B3 |
+| `05_scale_adaptation.ipynb` | Compare native, global, and tiled validation inference |
+| `06_final_evaluation.ipynb` | Verify the frozen TestReal result |
+
+The notebooks are runbooks rather than replacements for long Slurm jobs. They
+show the exact commands, paths, dependencies, and checks used by the project.
 
 ## Main results
 
