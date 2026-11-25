@@ -13,6 +13,18 @@ for config in configs/*.json; do
   python -m json.tool "$config" >/dev/null
 done
 
+echo "Checking notebooks..."
+python - <<'PYNOTEBOOK'
+import json
+from pathlib import Path
+
+for notebook in sorted(Path("notebooks").glob("*.ipynb")):
+    payload = json.loads(notebook.read_text(encoding="utf-8"))
+    if payload.get("nbformat") != 4:
+        raise SystemExit(f"Unsupported notebook format: {notebook}")
+    print(f"  valid {notebook}")
+PYNOTEBOOK
+
 echo "Checking shell and Slurm scripts..."
 for script in scripts/*.sh slurm/*.sh slurm/*.slurm; do
   [[ -e "$script" ]] || continue
@@ -22,6 +34,7 @@ done
 echo "Checking for user-specific absolute paths in tracked project files..."
 if grep -R -n -E \
   --exclude='check_repository.sh' \
+  --exclude-dir='__pycache__' \
   '/home/[[:alnum:]_.-]+|/mnt/beegfs|computer_vision/birdsai_data_pipeline' \
   README.md ARTIFACTS.md configs docs scripts slurm birdsai_pipeline tests; then
   echo "Found a user-specific absolute path." >&2

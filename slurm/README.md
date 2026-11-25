@@ -12,7 +12,8 @@ Recommended order:
 4. experiment_b_train.slurm
 5. experiment_b_validation.slurm
 6. experiment_b_continue_b2.slurm for the epoch ablation
-7. experiment_b_test.slurm for the frozen final evaluation
+7. experiment_b_scale_validation.slurm for native, global, and tiled inference
+8. experiment_b_test.slurm for the frozen final evaluation
 
 Cluster partition, GPU GRES, memory, and time directives are site-specific.
 Adjust only the SBATCH resource lines when moving to another cluster.
